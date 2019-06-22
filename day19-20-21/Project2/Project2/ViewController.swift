@@ -16,6 +16,7 @@ class ViewController: UIViewController {
     var countries = [String]()
     var score = 0
     var correctAnswer = 0
+    var times = 0
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -30,7 +31,14 @@ class ViewController: UIViewController {
         button2.layer.borderColor = UIColor(red: 1.0, green: 0.6, blue: 0.3, alpha: 1.0).cgColor
         button3.layer.borderColor = UIColor.lightGray.cgColor
         
+        setScore()
         askQuestion()
+    }
+    
+    func setScore() {
+        navigationItem.leftBarButtonItem = UIBarButtonItem(title: "\(times)/10", style: .plain, target: self, action: nil)
+        
+        navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Your score \(score)", style: .plain, target: self, action: nil)
     }
     
     func askQuestion(action: UIAlertAction! = nil) {
@@ -43,23 +51,41 @@ class ViewController: UIViewController {
         
         title = countries[correctAnswer].uppercased()
     }
-
+    
+    func gameOver(action: UIAlertAction! = nil) {
+        if let vc = storyboard?.instantiateViewController(withIdentifier: "Detail") as? GameOverController {
+            vc.score = "\(score)"
+            navigationController?.pushViewController(vc, animated: true)
+        }
+    }
+    
     @IBAction func buttonTapped(_ sender: UIButton) {
         var title: String
-        print(sender.tag, correctAnswer)
+        
         if sender.tag == correctAnswer {
             title = "Correct"
             score += 1
         } else {
-            title = "Wrong"
+            title = "Wrong this is \(countries[correctAnswer])"
             score -= 1
         }
         
-        let ac = UIAlertController(title: title, message: "Your score is \(score)", preferredStyle: .alert)
+        times += 1
+        setScore()
         
-        ac.addAction(UIAlertAction(title: "Continue", style: .default, handler: askQuestion))
+        var message = "Your score is \(score)"
         
-        present(ac, animated: true)
+        if (times >= 10) {
+            message = "Congratulations is your final score \(score)"
+            let dc = UIAlertController(title: title, message: message, preferredStyle: .alert)
+            dc.addAction(UIAlertAction(title: "Done", style: .default, handler: gameOver))
+            present(dc, animated: true)
+        } else {
+            let ac = UIAlertController(title: title, message: message, preferredStyle: .alert)
+            ac.addAction(UIAlertAction(title: "Continue", style: .default, handler: askQuestion))
+            present(ac, animated: true)
+        }
+
     }
     
 }
